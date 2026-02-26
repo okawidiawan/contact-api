@@ -13,7 +13,7 @@
   "license": "ISC",
   "author": "Oka Widiawan",
   "type": "module",
-  "main": "main.js",
+  "main": "src/main.js",
   "scripts": {
     "test": "jest -i"
   },
