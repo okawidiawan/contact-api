@@ -1,7 +1,7 @@
-import { prismaClient } from "../application/database";
-import { ResponseError } from "../error/response.error";
-import { getUserValidation, loginUserValidation, registerUserValidation } from "../validation/user-validation";
-import { validate } from "../validation/validation";
+import { prismaClient } from "../application/database.js";
+import { ResponseError } from "../error/response-error.js";
+import { getUserValidation, loginUserValidation, registerUserValidation } from "../validation/user-validation.js";
+import { validate } from "../validation/validation.js";
 import bcrypt from "bcrypt";
 import { v4 as uuid } from "uuid";
 

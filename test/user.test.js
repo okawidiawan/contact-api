@@ -1,5 +1,5 @@
 import supertest from "supertest";
-import { createTestUser, createTestUserOka, removeTestUser, removeTestUserOka } from "./test-util";
+import { createTestUser, removeTestUser } from "./test-util";
 import { web } from "../src/application/web";
 import { logger } from "../src/application/logging";
 
@@ -135,5 +135,12 @@ describe("GET /api/users/current", () => {
     const result = await supertest(web).get("/api/users/current").set("Authorization", "salah");
     expect(result.status).toBe(401);
     expect(result.body.errors).toBeDefined();
+  });
+
+  it("should can get my account", async () => {
+    const result = await supertest(web).get("/api/users/current").set("Authorization", "89467563-f269-45d8-920d-4b826c2960a9");
+    expect(result.status).toBe(200);
+    expect(result.body.data.username).toBe("okaw");
+    expect(result.body.data.name).toBe("Oka W");
   });
 });
