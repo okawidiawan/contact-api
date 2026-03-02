@@ -1,7 +1,8 @@
 import supertest from "supertest";
-import { createTestUser, removeTestUser } from "./test-util";
+import { createTestUser, getTestUser, removeTestUser } from "./test-util";
 import { web } from "../src/application/web";
 import { logger } from "../src/application/logging";
+import bcrypt from "bcrypt";
 
 describe("POST /api/users", () => {
   afterEach(async () => {
@@ -142,5 +143,57 @@ describe("GET /api/users/current", () => {
     expect(result.status).toBe(200);
     expect(result.body.data.username).toBe("okaw");
     expect(result.body.data.name).toBe("Oka W");
+  });
+});
+
+describe("PATCH /api/users/current", () => {
+  beforeEach(async () => {
+    await createTestUser();
+  });
+
+  afterEach(async () => {
+    await removeTestUser();
+  });
+
+  it("should can update user", async () => {
+    const result = await supertest(web).patch("/api/users/current").set("Authorization", "test").send({
+      name: "Ozu",
+      password: "ozurahasia",
+    });
+
+    expect(result.status).toBe(200);
+    expect(result.body.data.username).toBe("test");
+    expect(result.body.data.name).toBe("Ozu");
+
+    const user = await getTestUser();
+    expect(await bcrypt.compare("ozurahasia", user.password)).toBe(true);
+  });
+
+  it("should can update user name only", async () => {
+    const result = await supertest(web).patch("/api/users/current").set("Authorization", "test").send({
+      name: "Oju",
+    });
+    expect(result.status).toBe(200);
+    expect(result.body.data.username).toBe("test");
+    expect(result.body.data.name).toBe("Oju");
+  });
+
+  it("should can update user password only", async () => {
+    const result = await supertest(web).patch("/api/users/current").set("Authorization", "test").send({
+      password: "ojurahasia",
+    });
+
+    expect(result.status).toBe(200);
+    expect(result.body.data.username).toBe("test");
+    expect(result.body.data.name).toBe("test");
+
+    const user = await getTestUser();
+    expect(await bcrypt.compare("ojurahasia", user.password)).toBe(true);
+  });
+
+  it("should reject if request is invalid", async () => {
+    const result = await supertest(web).patch("/api/users/current").set("Authorization", "APA?").send({});
+
+    expect(result.status).toBe(401);
   });
 });
