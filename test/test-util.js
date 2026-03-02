@@ -27,3 +27,11 @@ export const getTestUser = async () => {
     },
   });
 };
+
+export const getMyUserAccount = async () => {
+  return prismaClient.user.findUnique({
+    where: {
+      username: "okaw",
+    },
+  });
+};

@@ -1,5 +1,5 @@
 import supertest from "supertest";
-import { createTestUser, getTestUser, removeTestUser } from "./test-util";
+import { createTestUser, getMyUserAccount, getTestUser, removeTestUser } from "./test-util";
 import { web } from "../src/application/web";
 import { logger } from "../src/application/logging";
 import bcrypt from "bcrypt";
@@ -139,7 +139,9 @@ describe("GET /api/users/current", () => {
   });
 
   it("should can get my account", async () => {
-    const result = await supertest(web).get("/api/users/current").set("Authorization", "89467563-f269-45d8-920d-4b826c2960a9");
+    const myAccount = await getMyUserAccount();
+
+    const result = await supertest(web).get("/api/users/current").set("Authorization", `${myAccount.token}`);
     expect(result.status).toBe(200);
     expect(result.body.data.username).toBe("okaw");
     expect(result.body.data.name).toBe("Oka W");
@@ -193,6 +195,31 @@ describe("PATCH /api/users/current", () => {
 
   it("should reject if request is invalid", async () => {
     const result = await supertest(web).patch("/api/users/current").set("Authorization", "APA?").send({});
+
+    expect(result.status).toBe(401);
+  });
+});
+
+describe("DELETE /api/users/logout", () => {
+  beforeEach(async () => {
+    await createTestUser();
+  });
+
+  afterEach(async () => {
+    await removeTestUser();
+  });
+  it("should can logout user", async () => {
+    const result = await supertest(web).delete("/api/users/logout").set("Authorization", "test");
+
+    expect(result.status).toBe(200);
+    expect(result.body.data).toBe("OK");
+
+    const user = await getTestUser();
+    expect(user.token).toBeNull();
+  });
+
+  it("should reject if token is invalid", async () => {
+    const result = await supertest(web).delete("/api/users/logout").set("Authorization", "salah");
 
     expect(result.status).toBe(401);
   });
