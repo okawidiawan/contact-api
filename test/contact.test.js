@@ -73,3 +73,119 @@ describe("GET /api/contacts/:contactId", () => {
     expect(result.status).toBe(404);
   });
 });
+
+describe("PUT /api/contacts/:contactId", () => {
+  beforeEach(async () => {
+    await createTestUser();
+    await createTestContact();
+  });
+
+  afterEach(async () => {
+    await removeAllTestContact();
+    await removeTestUser();
+  });
+
+  it("should can update contact", async () => {
+    const testContact = await getTestContact();
+
+    const result = await supertest(web).put(`/api/contacts/${testContact.id}`).set("Authorization", "test").send({
+      first_name: "Oju",
+      last_name: "Bezarius",
+      email: "oju@gmail.com",
+      phone: "085712345678",
+    });
+
+    expect(result.status).toBe(200);
+    expect(result.body.data.id).toBe(testContact.id);
+    expect(result.body.data.first_name).toBe("Oju");
+    expect(result.body.data.last_name).toBe("Bezarius");
+    expect(result.body.data.email).toBe("oju@gmail.com");
+    expect(result.body.data.phone).toBe("085712345678");
+  });
+
+  it("should reject if data is not found", async () => {
+    const testContact = await getTestContact();
+
+    const result = await supertest(web)
+      .put(`/api/contacts/${testContact.id + 1}`)
+      .set("Authorization", "test")
+      .send({
+        first_name: "Oju",
+        last_name: "Bezarius",
+        email: "oju@gmail.com",
+        phone: "085712345678",
+      });
+    expect(result.status).toBe(404);
+  });
+
+  it("should reject update if first_name is empty", async () => {
+    const testContact = await getTestContact();
+
+    const result = await supertest(web).put(`/api/contacts/${testContact.id}`).set("Authorization", "test").send({
+      first_name: "", // invalid
+      last_name: "Updated",
+      email: "updated@gmail.com",
+      phone: "08123456789",
+    });
+
+    expect(result.status).toBe(400);
+  });
+
+  it("should reject update if first_name is too long", async () => {
+    const testContact = await getTestContact();
+
+    const result = await supertest(web)
+      .put(`/api/contacts/${testContact.id}`)
+      .set("Authorization", "test")
+      .send({
+        first_name: "a".repeat(101), // > 100
+        last_name: "Updated",
+        email: "updated@gmail.com",
+        phone: "08123456789",
+      });
+
+    expect(result.status).toBe(400);
+  });
+
+  it("should reject update if last_name is missing", async () => {
+    const testContact = await getTestContact();
+
+    const result = await supertest(web).put(`/api/contacts/${testContact.id}`).set("Authorization", "test").send({
+      first_name: "Updated",
+      // last_name missing
+      email: "updated@gmail.com",
+      phone: "08123456789",
+    });
+
+    expect(result.status).toBe(400);
+  });
+
+  it("should reject update if email format is invalid", async () => {
+    const testContact = await getTestContact();
+
+    const result = await supertest(web).put(`/api/contacts/${testContact.id}`).set("Authorization", "test").send({
+      first_name: "Updated",
+      last_name: "User",
+      email: "bukan-email", // invalid format
+      phone: "08123456789",
+    });
+
+    expect(result.status).toBe(400);
+  });
+
+  it("should reject update if phone is too long", async () => {
+    const testContact = await getTestContact();
+
+    const result = await supertest(web)
+      .put(`/api/contacts/${testContact.id}`)
+      .set("Authorization", "test")
+      .send({
+        first_name: "Updated",
+        last_name: "User",
+        email: "updated@gmail.com",
+        phone: "1".repeat(25), // > 20
+      });
+
+    expect(result.status).toBe(400);
+  });
+});
