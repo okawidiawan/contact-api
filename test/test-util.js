@@ -87,3 +87,27 @@ export const removeAlltestAddresses = async () => {
     },
   });
 };
+
+export const createTestAddress = async () => {
+  const contact = await getTestContact();
+  await prismaClient.address.create({
+    data: {
+      contact_id: contact.id,
+      street: "Jalan Test",
+      city: "Kota Test",
+      province: "Provinsi Test",
+      country: "Indonesia",
+      postal_code: "12345",
+    },
+  });
+};
+
+export const getTestAddress = async () => {
+  return prismaClient.address.findFirst({
+    where: {
+      contact: {
+        username: "test",
+      },
+    },
+  });
+};
