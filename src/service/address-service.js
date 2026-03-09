@@ -2,7 +2,7 @@ import { validate } from "../validation/validation.js";
 import { getContactValidation } from "../validation/contact-validation.js";
 import { prismaClient } from "../application/database.js";
 import { ResponseError } from "../error/response-error.js";
-import { createAddressValidation, getAddressValidation, updateAddressValidation } from "../validation/address-validation.js";
+import { createAddressValidation, getAddressValidation, removeAddressValidation, updateAddressValidation } from "../validation/address-validation.js";
 
 const checkContact = async (user, contactId) => {
   contactId = validate(getContactValidation, contactId);
@@ -105,4 +105,29 @@ const update = async (user, contactId, request) => {
   });
 };
 
-export default { create, get, update };
+const remove = async (user, contactId, addressId) => {
+  contactId = await checkContact(user, contactId);
+
+  addressId = validate(removeAddressValidation, addressId);
+
+  const address = await prismaClient.address.count({
+    where: {
+      contact_id: contactId,
+      id: addressId,
+    },
+  });
+
+  console.log(address);
+
+  if (address !== 1) {
+    throw new ResponseError(404, "Contact is not found");
+  }
+
+  return prismaClient.address.delete({
+    where: {
+      id: addressId,
+    },
+  });
+};
+
+export default { create, get, update, remove };

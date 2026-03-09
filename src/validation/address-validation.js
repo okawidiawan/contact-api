@@ -19,4 +19,6 @@ const updateAddressValidation = Joi.object({
   postal_code: Joi.string().max(10).required(),
 });
 
-export { createAddressValidation, getAddressValidation, updateAddressValidation };
+const removeAddressValidation = Joi.number().positive().required();
+
+export { createAddressValidation, getAddressValidation, updateAddressValidation, removeAddressValidation };
