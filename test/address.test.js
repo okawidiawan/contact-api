@@ -248,3 +248,33 @@ describe("DELETE /api/contacts/:contactId/addresses/:addressId", () => {
     expect(result.status).toBe(404);
   });
 });
+
+describe("GET /api/contacts/:contactId/addresses", () => {
+  beforeEach(async () => {
+    await createTestUser();
+    await createTestContact();
+    await createTestAddress();
+  });
+
+  afterEach(async () => {
+    await removeAlltestAddresses();
+    await removeAllTestContact();
+    await removeTestUser();
+  });
+  it("should can show list of address", async () => {
+    const testContact = await getTestContact();
+
+    const result = await supertest(web).get(`/api/contacts/${testContact.id}/addresses`).set("Authorization", "test");
+    expect(result.status).toBe(200);
+    expect(result.body.data.length).toBe(1);
+  });
+
+  it("should can reject if contact id is invalid", async () => {
+    const testContact = await getTestContact();
+
+    const result = await supertest(web)
+      .get(`/api/contacts/${testContact.id + 1}/addresses`)
+      .set("Authorization", "test");
+    expect(result.status).toBe(404);
+  });
+});
